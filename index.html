@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo AR - Información del Árbol</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            z-index: 100;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 200;
+        }
+        
+        .ar-instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 100;
+        }
+
+        #arScene {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .marker-download {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 100;
+        }
+        
+        .marker-download button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Panel de información -->
+    <div class="info-panel">
+        <h3>🌳 Demo AR - Árbol de Roble</h3>
+        <p><strong>Especie:</strong> Quercus robur</p>
+        <p><strong>Edad estimada:</strong> 150 años</p>
+        <p><strong>Altura:</strong> 25 metros</p>
+        <p><strong>Estado:</strong> Saludable</p>
+    </div>
+
+    <!-- Botón para descargar marcador -->
+    <div class="marker-download">
+        <button onclick="downloadMarker()">📱 Descargar QR/Marcador</button>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="ar-instructions">
+        📱 Apunta la cámara al marcador QR para ver el AR
+    </div>
+
+    <!-- Loading indicator -->
+    <div class="loading" id="loading">
+        Cargando cámara y AR...
+    </div>
+
+    <!-- Escena AR -->
+    <a-scene 
+        id="arScene"
+        embedded 
+        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+        vr-mode-ui="enabled: false"
+        loading-screen="enabled: false">
+        
+        <!-- Assets -->
+        <a-assets>
+            <!-- Imagen del árbol -->
+            <img id="treeImage" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjMwMCIgdmlld0JveD0iMCAwIDIwMCAzMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMzAwIiBmaWxsPSIjOEVENTFBIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNTAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IndoaXRlIiBmb250LXNpemU9IjE2IiBmb250LWZhbWlseT0iQXJpYWwiPgpSb2JsZSAoUXVlcmN1cyByb2J1cikKPC90ZXh0Pgo8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjQwIiBmaWxsPSIjMkU3RDE5Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1zaXplPSIxMiI+CkVkYWQ6IDE1MCBhw7FvcwpBbHR1cmE6IDI1IG0KRXN0YWRvOiBTYWx1ZGFibGUKPC90ZXh0Pgo8L3N2Zz4=" />
+            
+            <!-- Sonido opcional -->
+            <!-- <audio id="clickSound" src="path/to/sound.mp3" preload="auto"></audio> -->
+        </a-assets>
+
+        <!-- Marcador Hiro (QR por defecto) -->
+        <a-marker preset="hiro" id="hiroMarker">
+            <!-- Panel de información 3D -->
+            <a-plane 
+                position="0 1 0" 
+                rotation="-90 0 0" 
+                width="3" 
+                height="2"
+                color="#ffffff"
+                opacity="0.9">
+            </a-plane>
+            
+            <!-- Imagen del árbol -->
+            <a-plane
+                src="#treeImage"
+                position="0 1.01 0"
+                rotation="-90 0 0"
+                width="2.8"
+                height="1.8"
+                opacity="1">
+            </a-plane>
+            
+            <!-- Texto 3D flotante -->
+            <a-text
+                value="🌳 Roble Centenario"
+                position="0 2.5 0"
+                align="center"
+                color="#2E7D19"
+                scale="2 2 2"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 10000">
+            </a-text>
+            
+            <!-- Modelo 3D simple del árbol -->
+            <a-cylinder 
+                position="0 0.5 0" 
+                radius="0.1" 
+                height="1" 
+                color="#8B4513">
+            </a-cylinder>
+            
+            <a-sphere 
+                position="0 1.2 0" 
+                radius="0.8" 
+                color="#228B22"
+                animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 2000; loop: true">
+            </a-sphere>
+            
+            <!-- Partículas decorativas -->
+            <a-sphere
+                position="1 2 0"
+                radius="0.05"
+                color="#90EE90"
+                animation="property: position; to: 1 3 0; dir: alternate; dur: 1500; loop: true">
+            </a-sphere>
+            
+            <a-sphere
+                position="-1 2.2 0"
+                radius="0.05"
+                color="#90EE90"
+                animation="property: position; to: -1 3.2 0; dir: alternate; dur: 1800; loop: true">
+            </a-sphere>
+        </a-marker>
+
+        <!-- Marcador personalizado con patrón de árbol -->
+        <a-marker type="pattern" url="data:text/plain;base64,CiMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwojIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyM=" id="customMarker">
+            <!-- Contenido diferente para marcador personalizado -->
+            <a-text
+                value="¡Marcador personalizado detectado!"
+                position="0 2 0"
+                align="center"
+                color="#FF6B35"
+                scale="1.5 1.5 1.5">
+            </a-text>
+        </a-marker>
+
+        <!-- Cámara -->
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        // Importar librerías AR.js y A-Frame
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ocultar loading cuando la escena esté lista
+            document.querySelector('#arScene').addEventListener('loaded', function () {
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 2000);
+            });
+
+            // Eventos del marcador
+            const marker = document.querySelector('#hiroMarker');
+            
+            marker.addEventListener('markerFound', function() {
+                console.log('¡Marcador encontrado!');
+                document.querySelector('.ar-instructions').innerHTML = '🎉 ¡AR activado! Explora el árbol';
+            });
+
+            marker.addEventListener('markerLost', function() {
+                console.log('Marcador perdido');
+                document.querySelector('.ar-instructions').innerHTML = '📱 Apunta la cámara al marcador QR';
+            });
+        });
+
+        // Función para descargar el marcador Hiro
+        function downloadMarker() {
+            // Crear el marcador Hiro como imagen
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 200;
+            canvas.height = 200;
+            
+            // Fondo blanco
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 200, 200);
+            
+            // Borde negro
+            ctx.fillStyle = 'black';
+            ctx.fillRect(10, 10, 180, 180);
+            
+            // Patrón Hiro simplificado
+            ctx.fillStyle = 'white';
+            ctx.fillRect(30, 30, 140, 140);
+            
+            ctx.fillStyle = 'black';
+            // Crear un patrón simple que simule el marcador Hiro
+            ctx.fillRect(70, 50, 60, 20);
+            ctx.fillRect(50, 90, 100, 20);
+            ctx.fillRect(70, 130, 60, 20);
+            
+            // Convertir a imagen y descargar
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'marcador-arbol.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+            
+            alert('📱 Descargando marcador...\n\n1. Imprime la imagen\n2. Apunta la cámara al marcador\n3. ¡Disfruta del AR!');
+        }
+
+        // Gestión de errores de cámara
+        navigator.mediaDevices.getUserMedia({video: true})
+            .then(function(stream) {
+                console.log('Cámara accedida correctamente');
+                stream.getTracks().forEach(track => track.stop()); // Liberar stream de prueba
+            })
+            .catch(function(err) {
+                console.error('Error al acceder a la cámara:', err);
+                alert('❌ Error: No se puede acceder a la cámara.\n\n' +
+                      '🔧 Soluciones:\n' +
+                      '1. Permitir acceso a la cámara\n' +
+                      '2. Usar HTTPS (no HTTP)\n' +
+                      '3. Verificar que la cámara funcione');
+            });
+    </script>
+
+    <!-- Librerías AR.js + A-Frame -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
+</body>
+</html>
