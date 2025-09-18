@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Demo AR - Información del Árbol</title>
+    
+    <!-- ✅ IMPORTANTE: Scripts de A-Frame PRIMERO en el HEAD -->
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
+    
     <style>
         body {
             margin: 0;
@@ -103,7 +108,7 @@
     <!-- Controles -->
     <div class="controls">
         <button onclick="downloadMarker()">📱 QR</button>
-        <button onclick="toggleCamera()">📷 Cámara</button>
+        <button onclick="toggleCamera()">🔄 Reset</button>
     </div>
 
     <!-- Instrucciones -->
@@ -133,7 +138,6 @@
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480;"
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
-        renderer="logarithmicDepthBuffer: true; colorManagement: true; sortObjects: true; antialias: true;"
         background="color: #ECECEC">
         
         <!-- Assets -->
@@ -151,8 +155,7 @@
                 width="2.5" 
                 height="2"
                 color="#ffffff"
-                opacity="0.95"
-                shadow>
+                opacity="0.95">
             </a-plane>
             
             <!-- Imagen del árbol -->
@@ -207,44 +210,88 @@
         </a-marker>
 
         <!-- Cámara -->
-        <a-entity camera look-controls-enabled="false" wasd-controls-enabled="false"></a-entity>
+        <a-entity camera></a-entity>
     </a-scene>
 
+    <!-- ✅ JavaScript AL FINAL, después de que A-Frame se cargue -->
     <script>
-        let sceneReady = false;
-        let cameraActive = false;
+        // ✅ Esperar a que A-Frame esté completamente cargado
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Verificar que AFRAME esté disponible
+            if (typeof AFRAME === 'undefined') {
+                console.error('❌ AFRAME no está definido');
+                showError('Error de carga', 'A-Frame no se cargó correctamente. Refresca la página.');
+                return;
+            }
 
-        // Component personalizado para manejar eventos del marcador
-        AFRAME.registerComponent('markerhandler', {
-            init: function () {
-                const marker = this.el;
+            console.log('✅ AFRAME cargado correctamente');
+
+            // ✅ Registrar componente personalizado DESPUÉS de verificar AFRAME
+            AFRAME.registerComponent('markerhandler', {
+                init: function () {
+                    const marker = this.el;
+                    
+                    marker.addEventListener('markerFound', function() {
+                        console.log('🎯 Marcador encontrado!');
+                        const instructions = document.getElementById('instructions');
+                        if (instructions) {
+                            instructions.innerHTML = '🎉 ¡AR Activo! Mueve el marcador';
+                        }
+                    });
+
+                    marker.addEventListener('markerLost', function() {
+                        console.log('📱 Marcador perdido');
+                        const instructions = document.getElementById('instructions');
+                        if (instructions) {
+                            instructions.innerHTML = '📱 Busca el marcador con la cámara';
+                        }
+                    });
+                }
+            });
+
+            // ✅ Configurar escena después de que todo esté listo
+            const scene = document.querySelector('#arScene');
+            let sceneReady = false;
+            
+            if (scene) {
+                // Timeout para loading
+                const loadingTimer = setTimeout(() => {
+                    if (!sceneReady) {
+                        showError('Timeout al cargar AR', 'La carga está tomando mucho tiempo. Verifica tu conexión e intenta de nuevo.');
+                    }
+                }, 15000);
                 
-                marker.addEventListener('markerFound', function() {
-                    console.log('🎯 Marcador encontrado!');
-                    document.getElementById('instructions').innerHTML = '🎉 ¡AR Activo! Mueve el marcador';
+                scene.addEventListener('loaded', function () {
+                    sceneReady = true;
+                    clearTimeout(loadingTimer);
+                    console.log('✅ Escena AR cargada');
+                    
+                    setTimeout(() => {
+                        const loading = document.getElementById('loading');
+                        if (loading) {
+                            loading.style.display = 'none';
+                        }
+                    }, 3000);
                 });
 
-                marker.addEventListener('markerLost', function() {
-                    console.log('📱 Marcador perdido');
-                    document.getElementById('instructions').innerHTML = '📱 Busca el marcador con la cámara';
+                scene.addEventListener('renderstart', function() {
+                    console.log('✅ Renderizado iniciado');
                 });
             }
+
+            // ✅ Verificar cámara
+            checkCamera();
         });
 
-        // Función mejorada para descargar marcador
+        // ✅ Función para descargar marcador
         function downloadMarker() {
-            // Crear QR con patrón Hiro
-            const link = document.createElement('a');
-            link.href = 'data:image/png;base64,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';
-            link.download = 'marcador-hiro-arbol.png';
-            
-            // Crear imagen del marcador Hiro
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.width = 200;
             canvas.height = 200;
             
-            // Dibujar marcador Hiro básico
+            // Dibujar marcador Hiro
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, 200, 200);
             ctx.fillStyle = 'black';
@@ -252,6 +299,7 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(40, 40, 120, 120);
             ctx.fillStyle = 'black';
+            // Patrón central del marcador Hiro
             ctx.fillRect(80, 60, 40, 20);
             ctx.fillRect(60, 100, 80, 20);
             ctx.fillRect(80, 140, 40, 20);
@@ -265,81 +313,50 @@
                 URL.revokeObjectURL(url);
             });
             
-            alert('✅ Descargando marcador Hiro\n\n📋 Instrucciones:\n1. Imprime la imagen en papel blanco\n2. Usa buena iluminación\n3. Mantén 20-40cm de distancia\n4. ¡Disfruta el AR!');
+            alert('✅ Descargando marcador Hiro\n\n📋 Instrucciones:\n1. Imprime en papel blanco\n2. Buena iluminación\n3. Distancia: 20-40cm\n4. ¡Disfruta el AR!');
         }
 
         function toggleCamera() {
             location.reload();
         }
 
-        // Manejo de errores mejorado
-        window.addEventListener('load', function() {
-            const scene = document.querySelector('#arScene');
-            let loadingTimer;
-            
-            // Timeout para loading
-            loadingTimer = setTimeout(() => {
-                if (!sceneReady) {
-                    showError('Timeout al cargar AR', 'La carga está tomando mucho tiempo. Verifica tu conexión e intenta de nuevo.');
-                }
-            }, 15000);
-            
-            // Cuando la escena esté lista
-            scene.addEventListener('loaded', function () {
-                sceneReady = true;
-                clearTimeout(loadingTimer);
-                
-                setTimeout(() => {
-                    const loading = document.getElementById('loading');
-                    if (loading) {
-                        loading.style.display = 'none';
-                    }
-                }, 2000);
-            });
-
-            // Detectar errores de A-Frame
-            scene.addEventListener('renderstart', function() {
-                console.log('✅ Renderizado iniciado');
-                cameraActive = true;
-            });
-        });
-
         function showError(title, message) {
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('errorText').textContent = message;
-            document.getElementById('errorMsg').style.display = 'block';
+            const loading = document.getElementById('loading');
+            const errorMsg = document.getElementById('errorMsg');
+            const errorText = document.getElementById('errorText');
+            
+            if (loading) loading.style.display = 'none';
+            if (errorText) errorText.textContent = message;
+            if (errorMsg) errorMsg.style.display = 'block';
         }
 
-        // Manejo de errores de cámara
-        navigator.mediaDevices.getUserMedia({
-            video: { 
-                facingMode: 'environment',
-                width: { ideal: 640 },
-                height: { ideal: 480 }
-            }
-        }).then(function(stream) {
-            console.log('✅ Cámara accedida correctamente');
-            // Liberar el stream de prueba
-            stream.getTracks().forEach(track => track.stop());
-        }).catch(function(err) {
-            console.error('❌ Error de cámara:', err);
-            showError('Error de cámara', 
-                'No se puede acceder a la cámara.\n\n' +
-                'Posibles soluciones:\n' +
-                '• Permitir acceso a cámara\n' +
-                '• Cerrar otras apps que usen cámara\n' +
-                '• Reiniciar navegador\n' +
-                '• Verificar conexión HTTPS');
-        });
+        function checkCamera() {
+            navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                }
+            }).then(function(stream) {
+                console.log('✅ Cámara accedida correctamente');
+                // Liberar stream de prueba
+                stream.getTracks().forEach(track => track.stop());
+            }).catch(function(err) {
+                console.error('❌ Error de cámara:', err);
+                showError('Error de cámara', 
+                    'No se puede acceder a la cámara.\n\n' +
+                    'Posibles soluciones:\n' +
+                    '• Permitir acceso a cámara\n' +
+                    '• Cerrar otras apps que usen cámara\n' +
+                    '• Reiniciar navegador\n' +
+                    '• Verificar conexión HTTPS');
+            });
+        }
 
-        // Log de debug
+        // ✅ Log de debug
         console.log('🚀 Demo AR Árboles iniciado');
         console.log('📱 User Agent:', navigator.userAgent);
         console.log('🔒 Protocolo:', window.location.protocol);
     </script>
-
-    <!-- Librerías AR.js + A-Frame -->
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
 </body>
 </html>
