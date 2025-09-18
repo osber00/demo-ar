@@ -59,6 +59,9 @@
         #arScene {
             width: 100vw;
             height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
         }
         
         .controls {
@@ -135,7 +138,7 @@
     <a-scene 
         id="arScene"
         embedded 
-        arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 640; sourceHeight: 480; displayWidth: 640; displayHeight: 480;"
+        arjs="sourceType: webcam; debugUIEnabled: true; detectionMode: mono_and_matrix; matrixCodeType: 3x3; trackingMethod: best; sourceWidth: 1280; sourceHeight: 960; displayWidth: 1280; displayHeight: 960;"
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false"
         background="color: #ECECEC">
@@ -178,19 +181,19 @@
                 animation="property: rotation; to: 0 360 0; loop: true; dur: 15000">
             </a-text>
             
-            <!-- Árbol 3D simple -->
+            <!-- Árbol 3D MÁS GRANDE -->
             <a-cylinder 
-                position="0 0.3 0" 
-                radius="0.08" 
-                height="0.6" 
+                position="0 1 0" 
+                radius="0.15" 
+                height="2" 
                 color="#8B4513">
             </a-cylinder>
             
             <a-sphere 
-                position="0 0.8 0" 
-                radius="0.4" 
+                position="0 2.5 0" 
+                radius="1" 
                 color="#228B22"
-                animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 3000; loop: true">
+                animation="property: scale; to: 1.2 1.2 1.2; dir: alternate; dur: 3000; loop: true">
             </a-sphere>
             
             <!-- Efectos de partículas -->
